@@ -1,66 +1,13 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/gsmlg/tiny-db/actions"
+	"github.com/gsmlg/tiny-db/handlers"
 	"github.com/gsmlg/tiny-db/types"
-	"io/ioutil"
 	"log"
 	"net/http"
 )
-
-func listHandler(db *types.TinyDatabase) http.Handler {
-	fn := func(w http.ResponseWriter, r *http.Request) {
-		list, _ := json.Marshal(db)
-		w.Write([]byte(list))
-		log.Println("List data...")
-	}
-	return http.HandlerFunc(fn)
-}
-
-func addHandler(db *types.TinyDatabase) http.Handler {
-	fn := func(w http.ResponseWriter, r *http.Request) {
-		var item types.TinyDataUnit
-		body, _ := ioutil.ReadAll(r.Body)
-		err := json.Unmarshal(body, &item)
-		if err != nil {
-			w.Write([]byte("errors"))
-		}
-		actions.Add(db, item)
-		w.Write([]byte(body))
-		log.Println("Add data to list...")
-	}
-	return http.HandlerFunc(fn)
-}
-
-func removeHandler(db *types.TinyDatabase) http.Handler {
-	fn := func(w http.ResponseWriter, r *http.Request) {
-		var item types.TinyDataUnit
-		body, _ := ioutil.ReadAll(r.Body)
-		err := json.Unmarshal(body, &item)
-		if err != nil {
-			w.Write([]byte("errors"))
-		}
-		actions.Remove(db, item)
-		w.Write([]byte(body))
-		log.Println("Remove data from list...")
-	}
-	return http.HandlerFunc(fn)
-}
-
-func saveHandler(db *types.TinyDatabase) http.Handler {
-	fn := func(w http.ResponseWriter, r *http.Request) {
-		list, _ := json.Marshal(db)
-		err := ioutil.WriteFile("./db.data", []byte(list), 0600)
-		if err != nil {
-			w.Write([]byte("errors"))
-		}
-		w.Write([]byte("Data saved..."))
-		log.Println("Data saved...")
-	}
-	return http.HandlerFunc(fn)
-}
 
 func main() {
 	data := types.TinyDataUnit{
@@ -84,10 +31,11 @@ func main() {
 
 	server := http.NewServeMux()
 
-	server.Handle("/", listHandler(&db))
-	server.Handle("/add", addHandler(&db))
-	server.Handle("/remove", removeHandler(&db))
-	server.Handle("/save", saveHandler(&db))
+	server.Handle("/", handlers.ListHandler(&db))
+	server.Handle("/add", handlers.AddHandler(&db))
+	server.Handle("/remove", handlers.RemoveHandler(&db))
+	server.Handle("/save", handlers.SaveHandler(&db))
+	server.Handle("/load", handlers.LoadHandler(&db))
 
 	log.Println("Listening...")
 	http.ListenAndServe(":3000", server)
