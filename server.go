@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"github.com/gsmlg/tiny-db/actions"
 	"github.com/gsmlg/tiny-db/types"
-	"ioutil"
+	"io/ioutil"
 	"log"
 	"net/http"
 )
 
-func listHandler(db types.TinyDatabase) http.Handler {
+func listHandler(db *types.TinyDatabase) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		list, _ := json.Marshal(db.Data)
 		w.Write([]byte(list))
@@ -19,24 +19,31 @@ func listHandler(db types.TinyDatabase) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
-func addHandler(db types.TinyDatabase) http.Handler {
+func addHandler(db *types.TinyDatabase) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		var item types.TinyDataUnit
-		body := ioutil.ReadAll(r.Body)
+		body, _ := ioutil.ReadAll(r.Body)
 		err := json.Unmarshal(body, &item)
-		db = actions.Add(db, item)
-		w.Write([]byte(r.Body))
+		if err != nil {
+			w.Write([]byte("errors"))
+		}
+		actions.Add(db, item)
+		w.Write([]byte(body))
 		log.Println("Add data to list...")
 	}
 	return http.HandlerFunc(fn)
 }
 
-func removeHandler(db types.TinyDatabase) http.Handler {
+func removeHandler(db *types.TinyDatabase) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		var item types.TinyDataUnit
-		err := json.Unmarshal(r.Body, &item)
-		db = actions.Remove(db, item)
-		w.Write([]byte(r.Body))
+		body, _ := ioutil.ReadAll(r.Body)
+		err := json.Unmarshal(body, &item)
+		if err != nil {
+			w.Write([]byte("errors"))
+		}
+		actions.Remove(db, item)
+		w.Write([]byte(body))
 		log.Println("Remove data from list...")
 	}
 	return http.HandlerFunc(fn)
@@ -54,17 +61,19 @@ func main() {
 		Size: 0,
 	}
 
-	db = actions.Add(db, data)
+	actions.Add(&db, data)
 
 	fmt.Println("%v", db)
 
-	db = actions.Remove(db, data)
+	actions.Remove(&db, data)
 
 	fmt.Println("%v", db)
 
 	server := http.NewServeMux()
 
 	server.Handle("/", listHandler(&db))
+	server.Handle("/add", addHandler(&db))
+	server.Handle("/remove", removeHandler(&db))
 
 	log.Println("Listening...")
 	http.ListenAndServe(":3000", server)
