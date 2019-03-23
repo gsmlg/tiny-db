@@ -12,7 +12,7 @@ import (
 
 func listHandler(db *types.TinyDatabase) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		list, _ := json.Marshal(db.Data)
+		list, _ := json.Marshal(db)
 		w.Write([]byte(list))
 		log.Println("List data...")
 	}
@@ -49,6 +49,19 @@ func removeHandler(db *types.TinyDatabase) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
+func saveHandler(db *types.TinyDatabase) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		list, _ := json.Marshal(db)
+		err := ioutil.WriteFile("./db.data", []byte(list), 0600)
+		if err != nil {
+			w.Write([]byte("errors"))
+		}
+		w.Write([]byte("Data saved..."))
+		log.Println("Data saved...")
+	}
+	return http.HandlerFunc(fn)
+}
+
 func main() {
 	data := types.TinyDataUnit{
 		Key:   "j",
@@ -74,6 +87,7 @@ func main() {
 	server.Handle("/", listHandler(&db))
 	server.Handle("/add", addHandler(&db))
 	server.Handle("/remove", removeHandler(&db))
+	server.Handle("/save", saveHandler(&db))
 
 	log.Println("Listening...")
 	http.ListenAndServe(":3000", server)
