@@ -1,7 +1,7 @@
 package types
 
 import (
-	_ "encoding/json"
+	// "encoding/json"
 )
 
 type TinyDataUnit struct {
@@ -13,3 +13,5 @@ type TinyDatabase struct {
 	Data []TinyDataUnit `json:"data"`
 	Size int            `json:"size"`
 }
+
+const Port = 21985

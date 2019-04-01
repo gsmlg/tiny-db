@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/gsmlg/tiny-db/actions"
 	"github.com/gsmlg/tiny-db/handlers"
 	"github.com/gsmlg/tiny-db/types"
 	"log"
@@ -10,24 +9,10 @@ import (
 )
 
 func main() {
-	data := types.TinyDataUnit{
-		Key:   "j",
-		Value: "josh",
-	}
-	fmt.Println("%v", data)
-
 	db := types.TinyDatabase{
 		Data: []types.TinyDataUnit{},
 		Size: 0,
 	}
-
-	actions.Add(&db, data)
-
-	fmt.Println("%v", db)
-
-	actions.Remove(&db, data)
-
-	fmt.Println("%v", db)
 
 	server := http.NewServeMux()
 
@@ -37,6 +22,7 @@ func main() {
 	server.Handle("/save", handlers.SaveHandler(&db))
 	server.Handle("/load", handlers.LoadHandler(&db))
 
-	log.Println("Listening...")
-	http.ListenAndServe(":3000", server)
+	port := types.Port
+	log.Println(fmt.Sprintf("Listening at port %d ...", port))
+	http.ListenAndServe(fmt.Sprintf(":%d", port), server)
 }
