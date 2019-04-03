@@ -6,6 +6,7 @@ import (
 	"github.com/gsmlg/tiny-db/types"
 	"io/ioutil"
 	"net/http"
+	"bytes"
 )
 
 var port int
@@ -39,8 +40,12 @@ func Add(key string, value string) {
 	baseurl = fmt.Sprintf("http://localhost:%d", port)
 
 	item := types.TinyDataUnit{Key: key, Value: value}
-	fmt.Println(item)
-	resp, err := http.Get(baseurl + "/add")
+	buf, err := json.Marshal(item)
+	if err != nil {
+		// handle error
+	}
+	r := bytes.NewReader(buf)
+	resp, err := http.Post(baseurl + "/add", "application/json", r)
 	if err != nil {
 		// handle error
 	}
