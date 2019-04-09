@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"github.com/gsmlg/tiny-db/handlers"
-	"net/http"
 )
 
 func main() {
@@ -21,7 +20,6 @@ func main() {
 	}
 
 	if cmd == "remove" {
-
+		handlers.Remove(key, value)
 	}
-
 }
