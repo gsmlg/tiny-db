@@ -1,5 +1,5 @@
-# TinyDB
+* TinyDB
 
-## TinyDB is a little database written *in* `go`
+** TinyDB is a little database written *in* `go`
 
 It use server-client design pattern.
